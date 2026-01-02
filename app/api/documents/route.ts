@@ -11,7 +11,53 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const documents = getDocuments(userId);
+    const { index } = await import("@/lib/pinecone");
+    const { getNamespace } = await import("@/lib/document-processing");
+    const { getEmbeddingDimensions } = await import("@/lib/embeddings");
+    
+    const namespace = getNamespace(userId);
+    const dimensions = getEmbeddingDimensions();
+    const dummyVector = new Array(dimensions).fill(0);
+
+    // Query Pinecone to get all unique documents by querying vectors and extracting metadata
+    // This works on serverless because Pinecone data persists, unlike in-memory storage
+    const queryResponse = await index.namespace(namespace).query({
+      vector: dummyVector,
+      topK: 10000,
+      includeMetadata: true,
+    });
+
+    // Extract unique documents from the vector metadata
+    const documentMap = new Map<string, {
+      id: string;
+      fileName: string;
+      fileType: string;
+      uploadDate: string;
+      chunkCount: number;
+    }>();
+
+    queryResponse.matches.forEach((match) => {
+      const metadata = match.metadata as any;
+      if (metadata.documentId && metadata.fileName) {
+        if (!documentMap.has(metadata.documentId)) {
+          documentMap.set(metadata.documentId, {
+            id: metadata.documentId,
+            fileName: metadata.fileName,
+            fileType: metadata.fileType || "unknown",
+            uploadDate: metadata.createdAt || new Date().toISOString(),
+            chunkCount: 0,
+          });
+        }
+        const doc = documentMap.get(metadata.documentId)!;
+        doc.chunkCount = Math.max(doc.chunkCount, (metadata.chunkIndex || 0) + 1);
+      }
+    });
+
+    const documents = Array.from(documentMap.values());
+    
+    // Sort by upload date (newest first)
+    documents.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
+
     return NextResponse.json({ documents });
   } catch (error) {
     console.error("Error fetching documents:", error);
