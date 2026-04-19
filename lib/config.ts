@@ -1,8 +1,8 @@
 /**
  * Provider configuration
- * Set AI_PROVIDER to: "openai", "ollama", "huggingface", or "groq"
+ * Set AI_PROVIDER to: "openai", "ollama", "huggingface", "groq", or "together"
  */
-export type AIProvider = "openai" | "ollama" | "huggingface" | "groq";
+export type AIProvider = "openai" | "ollama" | "huggingface" | "groq" | "together";
 
 export const AI_PROVIDER: AIProvider = (process.env.AI_PROVIDER || "huggingface") as AIProvider;
 
@@ -21,4 +21,29 @@ export const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 
 // Groq (free tier, very fast)
 export const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
+
+// Together.ai (OpenAI-compatible API: chat + embeddings)
+// Docs: https://docs.together.ai/docs/openai-api-compatibility
+export const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || "";
+export const TOGETHER_BASE_URL =
+  process.env.TOGETHER_BASE_URL || "https://api.together.xyz/v1";
+/**
+ * Embedding model id from Together's model list (see embeddings docs).
+ * Default is the model used in Together's official examples; 1024-dim — matches default Pinecone setup.
+ */
+export const TOGETHER_EMBEDDING_MODEL =
+  process.env.TOGETHER_EMBEDDING_MODEL || "intfloat/multilingual-e5-large-instruct";
+/**
+ * Chat/completions model id — must be a Together *serverless* model (see serverless-models docs).
+ * Meta-Llama-3.1-8B-Instruct-Turbo requires a dedicated endpoint and will fail on serverless.
+ */
+export const TOGETHER_LLM_MODEL =
+  process.env.TOGETHER_LLM_MODEL || "Qwen/Qwen2.5-7B-Instruct-Turbo";
+/**
+ * Vector size for the chosen Together embedding model (must match Pinecone index).
+ * Default 1024 matches intfloat/multilingual-e5-large-instruct; set explicitly if you change TOGETHER_EMBEDDING_MODEL.
+ */
+export const TOGETHER_EMBEDDING_DIMENSIONS = process.env.TOGETHER_EMBEDDING_DIMENSIONS
+  ? parseInt(process.env.TOGETHER_EMBEDDING_DIMENSIONS, 10)
+  : 1024;
 

@@ -3,12 +3,23 @@
 import { useState, useCallback } from "react";
 import { Upload, FileText, X, CheckCircle2, Loader2 } from "lucide-react";
 
-interface FileUploadProps {
-  onUploadStart: () => void;
-  onUploadComplete: (documentId?: string) => void;
+export interface UploadedDocumentPayload {
+  id: string;
+  fileName: string;
+  fileType: string;
+  uploadDate: string;
+  chunkCount: number;
 }
 
-export default function FileUpload({ onUploadStart, onUploadComplete }: FileUploadProps) {
+interface FileUploadProps {
+  onUploadStart: () => void;
+  /** Called as soon as the server accepts the upload (add to list immediately). */
+  onUploadSuccess: (doc: UploadedDocumentPayload) => void;
+  /** Called when upload fails so parent can clear loading state. */
+  onUploadError?: () => void;
+}
+
+export default function FileUpload({ onUploadStart, onUploadSuccess, onUploadError }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
   const [uploadMessage, setUploadMessage] = useState("");
@@ -51,23 +62,30 @@ export default function FileUpload({ onUploadStart, onUploadComplete }: FileUplo
       if (response.ok) {
         setUploadStatus("success");
         setUploadMessage(`Successfully uploaded ${file.name} (${data.document.chunkCount} chunks)`);
-        const newDocumentId = data.document.id;
+        onUploadSuccess({
+          id: data.document.id,
+          fileName: data.document.fileName,
+          fileType: data.document.fileType ?? "unknown",
+          uploadDate: data.document.uploadDate ?? new Date().toISOString(),
+          chunkCount: data.document.chunkCount,
+        });
         setTimeout(() => {
           setUploadStatus("idle");
           setUploadMessage("");
           setSelectedFile(null);
-          onUploadComplete(newDocumentId);
         }, 3000);
       } else {
         setUploadStatus("error");
         setUploadMessage(data.error || "Upload failed");
+        onUploadError?.();
       }
     } catch (error) {
       setUploadStatus("error");
       setUploadMessage("Failed to upload file. Please try again.");
       console.error("Upload error:", error);
+      onUploadError?.();
     }
-  }, [onUploadStart, onUploadComplete]);
+  }, [onUploadStart, onUploadSuccess, onUploadError]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

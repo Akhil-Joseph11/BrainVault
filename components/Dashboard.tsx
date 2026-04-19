@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { UserButton } from "@clerk/nextjs";
-import FileUpload from "./FileUpload";
+import FileUpload, { type UploadedDocumentPayload } from "./FileUpload";
 import DocumentList from "./DocumentList";
 import ChatInterface from "./ChatInterface";
 import BrainVaultLogo from "./BrainVaultLogo";
@@ -16,6 +16,22 @@ interface Document {
   chunkCount: number;
 }
 
+/** Union by id: GET /api/documents uses a Pinecone ANN query that may omit some docs; keep any id only in client state. */
+function mergeDocumentLists(prev: Document[], fetched: Document[]): Document[] {
+  const map = new Map<string, Document>();
+  for (const d of fetched) {
+    map.set(d.id, d);
+  }
+  for (const d of prev) {
+    if (!map.has(d.id)) {
+      map.set(d.id, d);
+    }
+  }
+  return Array.from(map.values()).sort(
+    (a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+  );
+}
+
 export default function Dashboard() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
@@ -27,7 +43,7 @@ export default function Dashboard() {
       const response = await fetch("/api/documents");
       if (response.ok) {
         const data = await response.json();
-        setDocuments(data.documents);
+        setDocuments((prev) => mergeDocumentLists(prev, data.documents));
       }
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -44,14 +60,18 @@ export default function Dashboard() {
     }
   }, [documents, selectedDocumentId]);
 
-  const handleUploadComplete = async (newDocumentId?: string) => {
-    await fetchDocuments();
+  const handleUploadSuccess = (doc: UploadedDocumentPayload) => {
     setIsUploading(false);
-    if (newDocumentId) {
-      setTimeout(() => {
-        setSelectedDocumentId(newDocumentId);
-      }, 100);
-    }
+    const next: Document = {
+      id: doc.id,
+      fileName: doc.fileName,
+      fileType: doc.fileType,
+      uploadDate: doc.uploadDate,
+      chunkCount: doc.chunkCount,
+    };
+    setDocuments((prev) => mergeDocumentLists(prev, [next]));
+    void fetchDocuments();
+    setTimeout(() => setSelectedDocumentId(doc.id), 100);
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -131,7 +151,8 @@ export default function Dashboard() {
           <div className="space-y-6">
             <FileUpload
               onUploadStart={() => setIsUploading(true)}
-              onUploadComplete={handleUploadComplete}
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={() => setIsUploading(false)}
             />
             <DocumentList
               documents={documents}

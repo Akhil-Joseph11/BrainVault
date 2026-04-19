@@ -2,7 +2,18 @@ import { Embeddings } from "@langchain/core/embeddings";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { OllamaEmbeddings } from "@langchain/ollama";
 import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
-import { AI_PROVIDER, OLLAMA_BASE_URL, OLLAMA_EMBEDDING_MODEL, HUGGINGFACE_API_KEY, HUGGINGFACE_EMBEDDING_MODEL, OPENAI_API_KEY } from "./config";
+import {
+  AI_PROVIDER,
+  OLLAMA_BASE_URL,
+  OLLAMA_EMBEDDING_MODEL,
+  HUGGINGFACE_API_KEY,
+  HUGGINGFACE_EMBEDDING_MODEL,
+  OPENAI_API_KEY,
+  TOGETHER_API_KEY,
+  TOGETHER_BASE_URL,
+  TOGETHER_EMBEDDING_MODEL,
+  TOGETHER_EMBEDDING_DIMENSIONS,
+} from "./config";
 
 let embeddingsInstance: Embeddings;
 
@@ -39,6 +50,19 @@ function getEmbeddings(): Embeddings {
       });
       break;
 
+    case "together":
+      if (!TOGETHER_API_KEY) {
+        throw new Error("TOGETHER_API_KEY is required when using Together.ai provider");
+      }
+      embeddingsInstance = new OpenAIEmbeddings({
+        openAIApiKey: TOGETHER_API_KEY,
+        modelName: TOGETHER_EMBEDDING_MODEL,
+        configuration: {
+          baseURL: TOGETHER_BASE_URL,
+        },
+      } as any);
+      break;
+
     default:
       if (HUGGINGFACE_API_KEY) {
         console.warn(`Unknown provider ${AI_PROVIDER}, defaulting to HuggingFace`);
@@ -64,6 +88,8 @@ export function getEmbeddingDimensions(): number {
       return 384;
     case "openai":
       return 1536;
+    case "together":
+      return TOGETHER_EMBEDDING_DIMENSIONS;
     default:
       return 384;
   }

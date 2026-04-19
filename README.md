@@ -78,16 +78,32 @@ Choose one of the following options:
    ```
    Note: Ollama or HuggingFace is still required for embeddings.
 
+#### Option D: Together.ai
+
+1. Sign up at [https://www.together.ai/](https://www.together.ai/) and create an API key.
+2. Create a Pinecone index whose **dimensions** match your embedding model (defaults below use **1024** for `intfloat/multilingual-e5-large-instruct`).
+3. Configure `.env.local`:
+
+   ```env
+   AI_PROVIDER=together
+   TOGETHER_API_KEY=your-together-api-key
+   PINECONE_INDEX_DIMENSIONS=1024
+   ```
+
+   Optional overrides: `TOGETHER_EMBEDDING_MODEL`, `TOGETHER_LLM_MODEL`, `TOGETHER_EMBEDDING_DIMENSIONS`, `TOGETHER_BASE_URL` (see `env.example`). Use a **serverless** chat model from [Together’s serverless list](https://docs.together.ai/docs/serverless-models); models that only support dedicated endpoints will return `model_not_available`.
+
 ### 3. Configure Pinecone
 
 1. Sign up at [https://www.pinecone.io/](https://www.pinecone.io/)
 2. Create a new index with the following settings:
-   - Index Name: `brainvault`
-   - Dimensions: 768 (Ollama), 384 (HuggingFace), or 1536 (OpenAI)
+   - Index Name: e.g. `brainvault` or `brainvault-1024` (must match `PINECONE_INDEX_NAME` in `.env.local`)
+   - Dimensions: 768 (Ollama), 384 (HuggingFace), 1536 (OpenAI), or 1024 (Together default embedding)
    - Metric: cosine
    - Cloud Provider: AWS, GCP, or Azure
    - Region: Choose based on your location
 3. Copy your API key from the dashboard
+
+**Important:** You **cannot** change an existing index’s dimension. If you used a **384**-dim index before and switch to **1024**-dim embeddings (e.g. Together `intfloat/multilingual-e5-large-instruct`), create a **new** index with **1024** dimensions, set `PINECONE_INDEX_NAME` to that index, and **re-upload** documents. Optionally delete the old index after migrating.
 
 ### 4. Configure Clerk
 

@@ -1,7 +1,18 @@
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatOllama } from "@langchain/ollama";
-import { AI_PROVIDER, OLLAMA_BASE_URL, OLLAMA_LLM_MODEL, HUGGINGFACE_API_KEY, HUGGINGFACE_LLM_MODEL, OPENAI_API_KEY, GROQ_API_KEY } from "./config";
+import {
+  AI_PROVIDER,
+  OLLAMA_BASE_URL,
+  OLLAMA_LLM_MODEL,
+  HUGGINGFACE_API_KEY,
+  HUGGINGFACE_LLM_MODEL,
+  OPENAI_API_KEY,
+  GROQ_API_KEY,
+  TOGETHER_API_KEY,
+  TOGETHER_BASE_URL,
+  TOGETHER_LLM_MODEL,
+} from "./config";
 
 let llmInstance: BaseChatModel;
 
@@ -59,6 +70,21 @@ function getLLM(): BaseChatModel {
         temperature: 0.7,
         streaming: true,
       });
+      break;
+
+    case "together":
+      if (!TOGETHER_API_KEY) {
+        throw new Error("TOGETHER_API_KEY is required when using Together.ai provider");
+      }
+      llmInstance = new ChatOpenAI({
+        modelName: TOGETHER_LLM_MODEL,
+        openAIApiKey: TOGETHER_API_KEY,
+        temperature: 0.7,
+        streaming: true,
+        configuration: {
+          baseURL: TOGETHER_BASE_URL,
+        },
+      } as any);
       break;
 
     default:

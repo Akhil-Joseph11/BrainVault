@@ -81,12 +81,13 @@ export async function POST(request: NextRequest) {
       throw pineconeError;
     }
 
+    const uploadDate = new Date().toISOString();
     addDocument({
       id: documentId,
       userId,
       fileName,
       fileType,
-      uploadDate: new Date().toISOString(),
+      uploadDate,
       chunkCount: chunks.length,
     });
 
@@ -95,6 +96,8 @@ export async function POST(request: NextRequest) {
       document: {
         id: documentId,
         fileName,
+        fileType,
+        uploadDate,
         chunkCount: chunks.length,
       },
     });
