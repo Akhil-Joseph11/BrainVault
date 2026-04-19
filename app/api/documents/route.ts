@@ -36,20 +36,29 @@ export async function GET() {
       chunkCount: number;
     }>();
 
+    const chunkCountFromMetadata = (metadata: Record<string, unknown>) => {
+      const tc = metadata.totalChunks;
+      if (typeof tc === "number" && tc > 0) return tc;
+      return ((metadata.chunkIndex as number | undefined) ?? 0) + 1;
+    };
+
     queryResponse.matches.forEach((match) => {
-      const metadata = match.metadata as any;
-      if (metadata.documentId && metadata.fileName) {
-        if (!documentMap.has(metadata.documentId)) {
-          documentMap.set(metadata.documentId, {
-            id: metadata.documentId,
-            fileName: metadata.fileName,
-            fileType: metadata.fileType || "unknown",
-            uploadDate: metadata.createdAt || new Date().toISOString(),
-            chunkCount: 0,
+      const metadata = match.metadata as Record<string, unknown>;
+      const docId = metadata.documentId as string | undefined;
+      if (docId && metadata.fileName) {
+        const fromMeta = chunkCountFromMetadata(metadata);
+        if (!documentMap.has(docId)) {
+          documentMap.set(docId, {
+            id: docId,
+            fileName: metadata.fileName as string,
+            fileType: (metadata.fileType as string) || "unknown",
+            uploadDate: (metadata.createdAt as string) || new Date().toISOString(),
+            chunkCount: fromMeta,
           });
+        } else {
+          const doc = documentMap.get(docId)!;
+          doc.chunkCount = Math.max(doc.chunkCount, fromMeta);
         }
-        const doc = documentMap.get(metadata.documentId)!;
-        doc.chunkCount = Math.max(doc.chunkCount, (metadata.chunkIndex || 0) + 1);
       }
     });
 

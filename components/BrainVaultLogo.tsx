@@ -21,18 +21,18 @@ export default function BrainVaultLogo({ size = "md", showText = true }: BrainVa
   };
 
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center space-x-3 transition-transform duration-300 ease-out hover:scale-[1.02] motion-reduce:hover:scale-100">
       <div className={`relative ${sizes[size]}`}>
-        {/* Outer glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-silver-400 to-silver-600 rounded-xl blur-sm opacity-20"></div>
-        {/* Main icon container */}
-        <div className="relative bg-gradient-to-br from-silver-300 via-silver-200 to-silver-400 rounded-xl p-1.5 shadow-lg shadow-silver-400/30 flex items-center justify-center">
+        <div className="absolute inset-0 animate-pulse-soft rounded-xl bg-gradient-to-br from-silver-400 to-silver-600 blur-md opacity-30 motion-reduce:animate-none motion-reduce:opacity-25" />
+        <div className="relative flex items-center justify-center rounded-xl bg-gradient-to-br from-silver-300 via-silver-200 to-silver-400 p-1.5 shadow-lg shadow-silver-400/35 ring-1 ring-white/10 transition-shadow duration-300 hover:shadow-silver-400/50">
           <Brain className={`${sizes[size]} text-black`} strokeWidth={2} />
         </div>
       </div>
       {showText && (
         <div className="flex flex-col">
-          <span className={`${textSizes[size]} font-bold bg-gradient-to-r from-silver-200 via-white to-silver-200 bg-clip-text text-transparent tracking-tight`}>
+          <span
+            className={`${textSizes[size]} bg-gradient-to-r from-silver-200 via-white to-silver-200 bg-[length:200%_auto] bg-left bg-clip-text font-bold tracking-tight text-transparent transition-[background-position] duration-700 ease-out hover:bg-right motion-reduce:transition-none`}
+          >
             BrainVault
           </span>
           {size !== "sm" && (

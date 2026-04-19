@@ -118,22 +118,32 @@ export default function FileUpload({ onUploadStart, onUploadSuccess, onUploadErr
   }, [handleFile]);
 
   return (
-    <div className="bg-black/40 backdrop-blur-xl rounded-2xl shadow-2xl border border-silver-500/10 p-8 hover:border-silver-500/20 transition-all duration-300">
-      <h2 className="text-2xl font-bold bg-gradient-to-r from-silver-200 to-silver-400 bg-clip-text text-transparent mb-6 flex items-center space-x-2">
-        <Upload className="h-6 w-6 text-silver-400" />
-        <span>Upload Document</span>
+    <div className="group/upload rounded-2xl border border-silver-500/10 bg-black/40 p-8 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-silver-500/25 hover:shadow-[0_0_48px_-16px_rgba(192,192,192,0.08)] animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 [animation-delay:40ms] motion-reduce:[animation-delay:0ms]">
+      <h2 className="mb-6 flex items-center space-x-2 text-2xl font-bold">
+        <Upload className="h-6 w-6 text-silver-400 transition-transform duration-300 group-hover/upload:-translate-y-0.5 group-hover/upload:rotate-3" />
+        <span className="bg-gradient-to-r from-silver-200 to-silver-400 bg-clip-text text-transparent">
+          Upload Document
+        </span>
       </h2>
 
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
+        className={`relative overflow-hidden rounded-xl border-2 border-dashed p-12 text-center transition-all duration-500 ease-out ${
           isDragging
-            ? "border-silver-400 bg-silver-500/10 shadow-lg shadow-silver-500/20 scale-[1.02]"
-            : "border-silver-500/20 hover:border-silver-500/40 hover:bg-silver-500/5"
+            ? "scale-[1.02] border-silver-400 bg-silver-500/10 shadow-[0_0_40px_-8px_rgba(192,192,192,0.25)] ring-2 ring-silver-400/30"
+            : "border-silver-500/20 hover:border-silver-500/45 hover:bg-silver-500/5"
         }`}
       >
+        {!isDragging && uploadStatus === "idle" && (
+          <div
+            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/upload:opacity-100"
+            aria-hidden
+          >
+            <div className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent animate-shimmer-sweep motion-reduce:animate-none" />
+          </div>
+        )}
         <input
           type="file"
           id="file-upload"
@@ -174,8 +184,8 @@ export default function FileUpload({ onUploadStart, onUploadSuccess, onUploadErr
         ) : (
           <>
             <div className="relative mb-6">
-              <div className="absolute inset-0 bg-silver-400/10 rounded-full blur-2xl"></div>
-              <Upload className="h-16 w-16 text-silver-400 mx-auto relative" />
+              <div className="absolute inset-0 animate-pulse-soft rounded-full bg-silver-400/10 blur-2xl motion-reduce:animate-none" />
+              <Upload className="relative mx-auto h-16 w-16 text-silver-400 transition-transform duration-500 group-hover/upload:scale-105" />
             </div>
             <p className="text-xl font-semibold text-silver-200 mb-2">
               Drag and drop your document here
@@ -185,7 +195,7 @@ export default function FileUpload({ onUploadStart, onUploadSuccess, onUploadErr
             </p>
             <label
               htmlFor="file-upload"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-silver-500 to-silver-400 text-black rounded-lg hover:from-silver-400 hover:to-silver-300 cursor-pointer transition-all duration-300 font-semibold shadow-lg shadow-silver-500/20 hover:shadow-silver-400/30 hover:scale-105"
+              className="inline-flex cursor-pointer items-center rounded-lg bg-gradient-to-r from-silver-500 to-silver-400 px-6 py-3 font-semibold text-black shadow-lg shadow-silver-500/20 transition-all duration-300 hover:scale-[1.03] hover:from-silver-400 hover:to-silver-300 hover:shadow-silver-400/35 active:scale-[0.98]"
             >
               <FileText className="h-5 w-5 mr-2" />
               Select File

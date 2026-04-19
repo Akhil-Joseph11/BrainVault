@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const documentId = uuidv4();
     const namespace = getNamespace(userId);
-    const chunks = await chunkText(text, documentId, userId, fileName);
+    const chunks = await chunkText(text, documentId, userId, fileName, fileType);
     const vectors = await Promise.all(
       chunks.map(async (chunk, chunkIndex) => {
         const embedding = await embeddings.embedQuery(chunk.text);

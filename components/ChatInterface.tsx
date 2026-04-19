@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Send, Bot, User, FileText, Loader2 } from "lucide-react";
+import ChatMessageMarkdown from "./ChatMessageMarkdown";
 
 interface Document {
   id: string;
@@ -9,7 +10,7 @@ interface Document {
 }
 
 interface ChatInterfaceProps {
-  selectedDocumentId: string | null;
+  selectedDocumentIds: string[];
   documents: Document[];
 }
 
@@ -17,22 +18,35 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: Array<{
+    documentId?: string;
     fileName: string;
     chunkIndex: number;
     score: number;
   }>;
 }
 
-export default function ChatInterface({ selectedDocumentId, documents }: ChatInterfaceProps) {
+/** Max document pills on one row before "+N"; keeps header height stable. */
+const MAX_VISIBLE_DOC_CHIPS = 4;
+
+export default function ChatInterface({ selectedDocumentIds, documents }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const validSelectedDocumentId = selectedDocumentId && documents.find((d) => d.id === selectedDocumentId) 
-    ? selectedDocumentId 
-    : null;
-  const selectedDoc = validSelectedDocumentId ? documents.find((d) => d.id === validSelectedDocumentId) : undefined;
+
+  const docById = useMemo(() => new Map(documents.map((d) => [d.id, d])), [documents]);
+
+  const validSelectedIds = useMemo(
+    () => selectedDocumentIds.filter((id) => docById.has(id)),
+    [selectedDocumentIds, docById]
+  );
+
+  const selectionKey = [...validSelectedIds].sort().join("\0");
+
+  const selectedDocs = validSelectedIds.map((id) => docById.get(id)!);
+
+  const visibleDocs = selectedDocs.slice(0, MAX_VISIBLE_DOC_CHIPS);
+  const overflowCount = Math.max(0, selectedDocs.length - visibleDocs.length);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -44,7 +58,7 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
 
   useEffect(() => {
     setMessages([]);
-  }, [validSelectedDocumentId]);
+  }, [selectionKey]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -66,7 +80,7 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
         },
         body: JSON.stringify({
           message: input,
-          documentId: validSelectedDocumentId, // Use validated documentId
+          documentIds: validSelectedIds,
         }),
       });
 
@@ -92,7 +106,7 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
             if (line.startsWith("data: ")) {
               try {
                 const data = JSON.parse(line.slice(6));
-                
+
                 if (data.content) {
                   setMessages((prev) => {
                     const updated = [...prev];
@@ -170,39 +184,58 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
   };
 
   return (
-    <div className="bg-black/40 backdrop-blur-xl rounded-2xl shadow-2xl border border-silver-500/10 flex flex-col h-[calc(100vh-300px)] max-h-[800px] overflow-hidden">
-      {/* Header */}
-      <div className="p-6 border-b border-silver-500/10 bg-gradient-to-r from-silver-500/5 to-transparent">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-silver-200 to-silver-400 bg-clip-text text-transparent">
+    <div className="flex h-[calc(100vh-300px)] max-h-[800px] flex-col overflow-hidden rounded-2xl border border-silver-500/10 bg-black/40 shadow-2xl shadow-black/40 backdrop-blur-xl transition-shadow duration-500 hover:shadow-[0_0_48px_-20px_rgba(192,192,192,0.06)] animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 [animation-delay:60ms] motion-reduce:[animation-delay:0ms]">
+      {/* Header — compact single band */}
+      <div className="shrink-0 border-b border-silver-500/10 bg-gradient-to-r from-silver-500/5 to-transparent px-4 py-4 sm:px-6">
+        <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start sm:gap-x-6">
+          <h2 className="bg-gradient-to-r from-silver-200 to-silver-400 bg-clip-text text-xl font-bold leading-tight text-transparent sm:text-2xl">
             Chat with Your Documents
           </h2>
-          {selectedDoc && (
-            <div className="flex items-center space-x-2 px-4 py-2 bg-silver-500/10 border border-silver-500/20 rounded-lg backdrop-blur-sm">
-              <FileText className="h-4 w-4 text-silver-400" />
-              <span className="text-sm font-semibold text-silver-200">
-                {selectedDoc.fileName}
-              </span>
+
+          {selectedDocs.length > 0 && (
+            <div className="flex min-w-0 w-full flex-nowrap items-center justify-start gap-2 overflow-x-auto pb-0.5 [scrollbar-width:thin] sm:justify-end">
+              {visibleDocs.map((d, i) => (
+                <div
+                  key={d.id}
+                  title={d.fileName}
+                  style={{ animationDelay: `${i * 55}ms` }}
+                  className="flex min-w-0 max-w-[min(13rem,calc(100vw-5rem))] shrink-0 animate-scale-in items-center gap-1.5 rounded-lg border border-silver-500/25 bg-black/40 px-2.5 py-1.5 shadow-sm shadow-black/30 backdrop-blur-sm transition-all duration-300 hover:border-silver-400/35 hover:shadow-[0_0_20px_-8px_rgba(192,192,192,0.2)] motion-reduce:animate-none motion-reduce:opacity-100 sm:max-w-[14rem]"
+                >
+                  <FileText className="h-3.5 w-3.5 shrink-0 text-silver-400" />
+                  <span className="min-w-0 truncate text-xs font-medium text-silver-200">{d.fileName}</span>
+                </div>
+              ))}
+              {overflowCount > 0 && (
+                <div
+                  className="flex shrink-0 animate-scale-in items-center rounded-lg border border-silver-500/30 bg-silver-500/10 px-2.5 py-1.5 text-xs font-semibold tabular-nums text-silver-300 motion-reduce:animate-none motion-reduce:opacity-100"
+                  style={{ animationDelay: `${visibleDocs.length * 55}ms` }}
+                  title={`${overflowCount} more not shown`}
+                >
+                  +{overflowCount}
+                </div>
+              )}
             </div>
           )}
         </div>
-        {!selectedDoc && (
-          <p className="mt-3 text-sm text-silver-400/70">
-            Select a document from the Documents tab to chat with it, or ask general questions about all your documents.
-          </p>
-        )}
+        <p className="mt-2 text-xs sm:text-sm text-silver-400/70 leading-snug">
+          {selectedDocs.length === 0
+            ? "No documents selected — questions use all uploaded documents. Pick files on the Documents tab to narrow scope."
+            : selectedDocs.length === 1
+              ? "Scoped to the selected document."
+              : `Scoped to ${selectedDocs.length} selected documents.`}
+        </p>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-silver-400/10 rounded-full blur-2xl"></div>
-                <Bot className="h-16 w-16 text-silver-400 mx-auto relative" />
+              <div className="relative mb-6 inline-flex animate-micro-float motion-reduce:animate-none">
+                <div className="absolute inset-0 rounded-full bg-silver-400/10 blur-2xl motion-reduce:animate-none" />
+                <Bot className="relative mx-auto h-16 w-16 text-silver-400 drop-shadow-[0_0_24px_rgba(192,192,192,0.15)]" />
               </div>
-              <p className="text-silver-300 text-lg font-medium">
+              <p className="text-lg font-medium text-silver-300">
                 Start a conversation by asking a question about your documents
               </p>
             </div>
@@ -229,7 +262,10 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
                     : "bg-silver-500/10 border border-silver-500/20 text-silver-100"
                 }`}
               >
-                <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                <ChatMessageMarkdown
+                  content={message.content}
+                  variant={message.role === "user" ? "user" : "assistant"}
+                />
                 {message.sources && message.sources.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-silver-500/20">
                     <p className="text-xs font-semibold mb-3 text-silver-400/80 uppercase tracking-wider">Sources:</p>
@@ -239,7 +275,7 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
                           <FileText className="h-3.5 w-3.5 text-silver-400" />
                           <span className="flex-1">
                             {source.fileName} <span className="text-silver-400/60">(Chunk {source.chunkIndex})</span>
-                            {source.score && (
+                            {source.score != null && (
                               <span className="ml-2 text-silver-400 font-semibold">• {(source.score * 100).toFixed(1)}% match</span>
                             )}
                           </span>
@@ -282,7 +318,7 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask a question about your documents..."
-            className="flex-1 resize-none border border-silver-500/20 rounded-xl px-5 py-3 bg-black/40 backdrop-blur-sm text-silver-100 placeholder-silver-500/50 focus:outline-none focus:ring-2 focus:ring-silver-400/50 focus:border-silver-400/50 transition-all duration-300"
+            className="flex-1 resize-none rounded-xl border border-silver-500/20 bg-black/40 px-5 py-3 text-silver-100 backdrop-blur-sm placeholder-silver-500/50 transition-all duration-500 focus:border-silver-400/50 focus:outline-none focus:ring-2 focus:ring-silver-400/40"
             rows={1}
             disabled={isLoading}
             onInput={(e) => {
@@ -294,7 +330,7 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="p-3 bg-gradient-to-br from-silver-400 to-silver-500 text-black rounded-xl hover:from-silver-300 hover:to-silver-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg shadow-silver-500/20 hover:shadow-silver-400/30 hover:scale-105 disabled:hover:scale-100 font-semibold"
+            className="rounded-xl bg-gradient-to-br from-silver-400 to-silver-500 p-3 font-semibold text-black shadow-lg shadow-silver-500/20 transition-all duration-300 hover:scale-105 hover:from-silver-300 hover:to-silver-400 hover:shadow-silver-400/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 motion-reduce:hover:scale-100"
           >
             <Send className="h-5 w-5" />
           </button>
@@ -303,4 +339,3 @@ export default function ChatInterface({ selectedDocumentId, documents }: ChatInt
     </div>
   );
 }
-

@@ -7,8 +7,11 @@ export interface DocumentChunk {
     documentId: string;
     userId: string;
     fileName: string;
+    fileType: string;
     chunkIndex: number;
     createdAt: string;
+    /** Total chunks for this document (same on every vector — used for accurate listing). */
+    totalChunks: number;
   };
 }
 
@@ -38,7 +41,8 @@ export async function chunkText(
   text: string,
   documentId: string,
   userId: string,
-  fileName: string
+  fileName: string,
+  fileType: string
 ): Promise<DocumentChunk[]> {
   const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
@@ -47,6 +51,8 @@ export async function chunkText(
   });
 
   const chunks = await splitter.createDocuments([text]);
+  const totalChunks = chunks.length;
+  const createdAt = new Date().toISOString();
 
   return chunks.map((chunk, index) => ({
     text: chunk.pageContent,
@@ -54,8 +60,10 @@ export async function chunkText(
       documentId,
       userId,
       fileName,
+      fileType,
       chunkIndex: index,
-      createdAt: new Date().toISOString(),
+      createdAt,
+      totalChunks,
     },
   }));
 }
