@@ -16,7 +16,9 @@ export default function ChatMessageMarkdown({ content, variant }: ChatMessageMar
   const user = variant === "user";
 
   const components: Components = {
-    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+    p: ({ children }) => (
+      <p className={`mb-2 last:mb-0 ${user ? "text-zinc-950" : "text-silver-100"}`}>{children}</p>
+    ),
     strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
     em: ({ children }) => <em className="italic">{children}</em>,
     ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-5 last:mb-0">{children}</ul>,
@@ -111,7 +113,7 @@ export default function ChatMessageMarkdown({ content, variant }: ChatMessageMar
               : "my-2 overflow-x-auto rounded-lg bg-black/50 p-3 text-sm"
           }
         >
-          <code className={className} {...rest}>
+          <code className={`${className ?? ""} ${user ? "text-zinc-950" : "text-silver-100"}`} {...rest}>
             {children}
           </code>
         </pre>
@@ -120,7 +122,11 @@ export default function ChatMessageMarkdown({ content, variant }: ChatMessageMar
   };
 
   return (
-    <div className="leading-relaxed">
+    <div
+      className={`leading-relaxed [&_*]:max-w-full ${
+        user ? "text-zinc-950 [&_p]:text-zinc-950 [&_li]:text-zinc-950" : "text-silver-100 [&_p]:text-silver-100 [&_li]:text-silver-100"
+      }`}
+    >
       <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
         {content}
       </ReactMarkdown>

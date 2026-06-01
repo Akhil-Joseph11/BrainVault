@@ -232,8 +232,10 @@ export default function ChatInterface({ selectedDocumentIds, documents }: ChatIn
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               <div className="relative mb-6 inline-flex animate-micro-float motion-reduce:animate-none">
-                <div className="absolute inset-0 rounded-full bg-silver-400/10 blur-2xl motion-reduce:animate-none" />
-                <Bot className="relative mx-auto h-16 w-16 text-silver-400 drop-shadow-[0_0_24px_rgba(192,192,192,0.15)]" />
+                <div className="absolute inset-0 rounded-full bg-white/20 blur-2xl motion-reduce:animate-none" />
+                <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-silver-300/50 bg-gradient-to-br from-silver-100 via-silver-200 to-silver-400 shadow-xl shadow-black/40">
+                  <Bot className="h-10 w-10 text-zinc-800" strokeWidth={2} />
+                </div>
               </div>
               <p className="text-lg font-medium text-silver-300">
                 Start a conversation by asking a question about your documents
@@ -249,17 +251,17 @@ export default function ChatInterface({ selectedDocumentIds, documents }: ChatIn
               }`}
             >
               {message.role === "assistant" && (
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 bg-gradient-to-br from-silver-400 to-silver-600 rounded-full flex items-center justify-center shadow-lg shadow-silver-500/20">
-                    <Bot className="h-5 w-5 text-black" />
+                <div className="shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-silver-300/50 bg-gradient-to-br from-silver-100 to-silver-400 shadow-lg shadow-black/35">
+                    <Bot className="h-5 w-5 text-zinc-800" strokeWidth={2.25} />
                   </div>
                 </div>
               )}
               <div
-                className={`max-w-[75%] rounded-2xl px-5 py-3 backdrop-blur-sm ${
+                className={`max-w-[75%] rounded-2xl px-5 py-3 ${
                   message.role === "user"
-                    ? "bg-gradient-to-br from-silver-400 to-silver-500 text-black shadow-lg shadow-silver-500/30"
-                    : "bg-silver-500/10 border border-silver-500/20 text-silver-100"
+                    ? "border border-white/20 bg-white text-zinc-950 shadow-lg shadow-black/25"
+                    : "border border-silver-500/25 bg-zinc-900/80 text-silver-100 backdrop-blur-sm"
                 }`}
               >
                 <ChatMessageMarkdown
@@ -286,9 +288,9 @@ export default function ChatInterface({ selectedDocumentIds, documents }: ChatIn
                 )}
               </div>
               {message.role === "user" && (
-                <div className="flex-shrink-0">
-                  <div className="h-10 w-10 bg-silver-500/20 border border-silver-500/30 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <User className="h-5 w-5 text-silver-300" />
+                <div className="shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-silver-400/50 bg-silver-200 shadow-md shadow-black/25">
+                    <User className="h-5 w-5 text-zinc-800" strokeWidth={2.25} />
                   </div>
                 </div>
               )}
@@ -297,13 +299,13 @@ export default function ChatInterface({ selectedDocumentIds, documents }: ChatIn
         )}
         {isLoading && (
           <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="h-10 w-10 bg-gradient-to-br from-silver-400 to-silver-600 rounded-full flex items-center justify-center shadow-lg shadow-silver-500/20">
-                <Bot className="h-5 w-5 text-black" />
+            <div className="shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-silver-300/50 bg-gradient-to-br from-silver-100 to-silver-400 shadow-lg shadow-black/35">
+                <Bot className="h-5 w-5 text-zinc-800" strokeWidth={2.25} />
               </div>
             </div>
-            <div className="bg-silver-500/10 border border-silver-500/20 rounded-2xl px-5 py-3 backdrop-blur-sm">
-              <Loader2 className="h-5 w-5 animate-spin text-silver-400" />
+            <div className="rounded-2xl border border-silver-500/20 bg-silver-500/10 px-5 py-3 backdrop-blur-sm">
+              <Loader2 className="h-5 w-5 animate-spin text-silver-200" />
             </div>
           </div>
         )}
@@ -330,9 +332,9 @@ export default function ChatInterface({ selectedDocumentIds, documents }: ChatIn
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="rounded-xl bg-gradient-to-br from-silver-400 to-silver-500 p-3 font-semibold text-black shadow-lg shadow-silver-500/20 transition-all duration-300 hover:scale-105 hover:from-silver-300 hover:to-silver-400 hover:shadow-silver-400/40 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 motion-reduce:hover:scale-100"
+            className="rounded-xl border border-white/20 bg-white p-3 font-semibold text-zinc-900 shadow-lg shadow-black/25 transition-all duration-300 hover:scale-105 hover:bg-silver-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 motion-reduce:hover:scale-100"
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-5 w-5 text-zinc-900" strokeWidth={2.25} />
           </button>
         </div>
       </div>

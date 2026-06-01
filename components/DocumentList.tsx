@@ -121,10 +121,11 @@ export default function DocumentList({
                 }
               }}
               style={{ animationDelay: `${staggerMs}ms` }}
-              className={`group relative cursor-pointer p-6 transition-all duration-300 ease-out animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 hover:bg-silver-500/5 hover:translate-x-[2px] ${
+              aria-selected={isSelected}
+              className={`group relative cursor-pointer border-l-4 p-6 transition-colors duration-200 ease-out animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 ${
                 isSelected
-                  ? "bg-gradient-to-r from-silver-500/10 to-transparent shadow-lg shadow-silver-500/10 before:pointer-events-none before:absolute before:inset-y-0 before:left-0 before:z-[1] before:w-1 before:bg-gradient-to-b before:from-silver-200 before:to-silver-500"
-                  : ""
+                  ? "border-l-silver-300 bg-silver-500/25 ring-1 ring-inset ring-silver-400/35 hover:bg-silver-500/35"
+                  : "border-l-transparent hover:border-l-silver-500/50 hover:bg-white/[0.06]"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
@@ -141,31 +142,52 @@ export default function DocumentList({
                       aria-label={`Select ${doc.fileName}`}
                     />
                     <span
-                      className="flex h-[18px] w-[18px] items-center justify-center rounded-md border border-silver-500/35 bg-black/50 shadow-inner shadow-black/40 transition-all duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-silver-400/50 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-black peer-checked:border-silver-300/80 peer-checked:bg-gradient-to-br peer-checked:from-silver-300 peer-checked:to-silver-600 peer-checked:shadow-md peer-checked:shadow-silver-500/20 peer-checked:[&>svg]:opacity-100"
+                      className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md border transition-colors duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-silver-400/60 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-black ${
+                        isSelected
+                          ? "border-silver-200 bg-white shadow-md shadow-black/40"
+                          : "border-silver-400/60 bg-zinc-900/80 shadow-inner shadow-black/40 group-hover:border-silver-300/70"
+                      }`}
                     >
                       <Check
-                        strokeWidth={3}
-                        className="h-3 w-3 text-black opacity-0 transition-opacity duration-150"
+                        strokeWidth={3.5}
+                        className={`h-3.5 w-3.5 text-black ${
+                          isSelected ? "opacity-100" : "size-0 opacity-0"
+                        }`}
                         aria-hidden
                       />
                     </span>
                   </label>
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div
-                      className={`h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                      className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors duration-200 ${
                         isSelected
-                          ? "bg-gradient-to-br from-silver-400 to-silver-600 shadow-lg shadow-silver-500/30"
-                          : "bg-silver-500/10 group-hover:bg-silver-500/20 border border-silver-500/20"
+                          ? "border border-silver-200/60 bg-gradient-to-br from-silver-200 via-silver-300 to-silver-500 shadow-md shadow-black/30"
+                          : "border border-silver-500/35 bg-zinc-800/90 group-hover:border-silver-400/55 group-hover:bg-zinc-700/90"
                       }`}
                     >
-                      <FileText className={`h-6 w-6 ${isSelected ? "text-black" : "text-silver-400"}`} />
+                      <FileText
+                        className={`h-6 w-6 ${
+                          isSelected
+                            ? "text-zinc-900"
+                            : "text-silver-300 group-hover:text-silver-100"
+                        }`}
+                        strokeWidth={2}
+                      />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-silver-100 truncate mb-2">
+                    <h3
+                      className={`mb-2 truncate text-lg font-semibold ${
+                        isSelected ? "text-white" : "text-silver-100 group-hover:text-white"
+                      }`}
+                    >
                       {doc.fileName}
                     </h3>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-silver-400/70">
+                    <div
+                      className={`flex flex-wrap items-center gap-4 text-sm ${
+                        isSelected ? "text-silver-200/90" : "text-silver-400/70"
+                      }`}
+                    >
                       <div className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4" />
                         <span>{formatDate(doc.uploadDate)}</span>
@@ -174,7 +196,13 @@ export default function DocumentList({
                         <Hash className="h-4 w-4" />
                         <span>{doc.chunkCount} chunks</span>
                       </div>
-                      <span className="px-3 py-1 bg-silver-500/10 border border-silver-500/20 rounded-lg text-xs font-medium">
+                      <span
+                        className={`rounded-lg border px-3 py-1 text-xs font-medium ${
+                          isSelected
+                            ? "border-silver-400/45 bg-silver-500/30 text-silver-100"
+                            : "border-silver-500/20 bg-silver-500/10"
+                        }`}
+                      >
                         {doc.fileType || "Unknown"}
                       </span>
                     </div>

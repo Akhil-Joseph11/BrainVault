@@ -121,9 +121,7 @@ export default function FileUpload({ onUploadStart, onUploadSuccess, onUploadErr
     <div className="group/upload rounded-2xl border border-silver-500/10 bg-black/40 p-8 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:border-silver-500/25 hover:shadow-[0_0_48px_-16px_rgba(192,192,192,0.08)] animate-fade-in-up motion-reduce:animate-none motion-reduce:opacity-100 [animation-delay:40ms] motion-reduce:[animation-delay:0ms]">
       <h2 className="mb-6 flex items-center space-x-2 text-2xl font-bold">
         <Upload className="h-6 w-6 text-silver-400 transition-transform duration-300 group-hover/upload:-translate-y-0.5 group-hover/upload:rotate-3" />
-        <span className="bg-gradient-to-r from-silver-200 to-silver-400 bg-clip-text text-transparent">
-          Upload Document
-        </span>
+        <span className="text-white">Upload Document</span>
       </h2>
 
       <div
@@ -195,9 +193,9 @@ export default function FileUpload({ onUploadStart, onUploadSuccess, onUploadErr
             </p>
             <label
               htmlFor="file-upload"
-              className="inline-flex cursor-pointer items-center rounded-lg bg-gradient-to-r from-silver-500 to-silver-400 px-6 py-3 font-semibold text-black shadow-lg shadow-silver-500/20 transition-all duration-300 hover:scale-[1.03] hover:from-silver-400 hover:to-silver-300 hover:shadow-silver-400/35 active:scale-[0.98]"
+              className="inline-flex cursor-pointer items-center rounded-lg border-2 border-white/30 bg-white px-6 py-3 font-semibold text-zinc-900 shadow-lg shadow-black/30 transition-all duration-300 hover:scale-[1.03] hover:bg-silver-100 hover:shadow-xl active:scale-[0.98]"
             >
-              <FileText className="h-5 w-5 mr-2" />
+              <FileText className="mr-2 h-5 w-5 text-zinc-800" />
               Select File
             </label>
             <p className="text-xs text-silver-500/60 mt-6">
@@ -208,10 +206,12 @@ export default function FileUpload({ onUploadStart, onUploadSuccess, onUploadErr
       </div>
 
       {selectedFile && uploadStatus !== "success" && uploadStatus !== "uploading" && (
-        <div className="mt-6 p-4 bg-silver-500/5 border border-silver-500/20 rounded-lg flex items-center justify-between backdrop-blur-sm">
+        <div className="mt-6 flex items-center justify-between rounded-lg border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
           <div className="flex items-center space-x-3">
-            <FileText className="h-5 w-5 text-silver-400" />
-            <span className="text-sm text-silver-200 font-medium">{selectedFile.name}</span>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/25 bg-white/20">
+              <FileText className="h-5 w-5 text-white" strokeWidth={2} />
+            </div>
+            <span className="text-sm font-medium text-silver-100">{selectedFile.name}</span>
           </div>
           <button
             onClick={() => {
