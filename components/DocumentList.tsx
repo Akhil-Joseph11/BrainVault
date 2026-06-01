@@ -75,8 +75,9 @@ export default function DocumentList({
   return (
     <div className="overflow-hidden rounded-2xl border border-silver-500/10 bg-black/40 shadow-2xl backdrop-blur-xl animate-fade-in motion-reduce:animate-none motion-reduce:opacity-100 [animation-delay:0.12s] motion-reduce:[animation-delay:0ms]">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-silver-500/10 bg-gradient-to-r from-silver-500/5 to-transparent p-6">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-silver-200 to-silver-400 bg-clip-text text-transparent">
-          Your Documents <span className="text-silver-400/60 font-normal">({documents.length})</span>
+        <h2 className="text-2xl font-bold text-white">
+          Your Documents{" "}
+          <span className="font-normal text-silver-400">({documents.length})</span>
         </h2>
         <div className="flex flex-wrap items-center gap-2">
           {selectedDocumentIds.length > 0 && (
